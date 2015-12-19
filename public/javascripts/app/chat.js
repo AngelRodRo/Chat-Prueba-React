@@ -1,17 +1,15 @@
-
 var Contact = React.createClass({
-
     selectedContact: function(){
-        // if(JSON.parse(localStorage.contacts).length!=0){
-        //     var contacts = JSON.parse(localStorage.contacts);
-        //     contacts.push(this.props.user);
-        // }
-        // else {
-        //     localStorage.contacts = JSON.stringfy([this.props.user]);
-        // }
+        var data = {
+            name : this.props.name,
+            lastname : this.props.lastname,
+            email : this.props.email,
+            socket_id : this.props.socket_id
+        }
 
+        localStorage.selectedContact = JSON.stringify(data);
+        this.props.onHandleChat();
     },
-
     render:function(){
         return(
             <li
@@ -27,8 +25,8 @@ var Contact = React.createClass({
 
 var ContactsList = React.createClass({
 
-    selectedChat: function (user) {
-        alert(user)
+    changeChat(){
+        
     },
 
     render:function() {
@@ -44,7 +42,8 @@ var ContactsList = React.createClass({
                                   name={user.name}
                                   lastname={user.lastname}
                                   socket_id={user.socket_id}
-                                  email={user.email}
+                                  email={user.email
+                                  onHandleChat={this.changeChat}
                               ></Contact>
                           );
                       })
@@ -56,7 +55,7 @@ var ContactsList = React.createClass({
 });
 
 var Message = React.createClass({
-  render() {
+    render() {
       return (
           <div className="message">
               <strong>{this.props.user} :</strong>
@@ -64,7 +63,7 @@ var Message = React.createClass({
               <span>{this.props.date}</span>
           </div>
       );
-  }
+    }
 });
 //
 
@@ -72,7 +71,7 @@ var Typing = React.createClass({
     render() {
         return (
             <div className="typing">
-                <strong>{this.props.user} :</strong>
+                <strong>{this.props.name} {this.prop.lastname} :</strong>
                 <span> esta escribiendo un mensajes ...</span>
             </div>
         );
@@ -80,29 +79,27 @@ var Typing = React.createClass({
 });
 
 //
-// var MessageList = React.createClass({
-//   render() {
-//       return (
-//           <div className='messages'>
-//               <h2> Conversation: </h2>
-//               {
-//                   this.props.messages.map((message, i) => {
-//                       return (
-//                           <Message
-//                               key={i}
-//                               user={message.user}
-//                               text={message.text}
-//                               date={message.date}
-//                           />
-//                       );
-//                   })
-//               }
-//           </div>
-//       );
-//   }
-// });
-//
-//
+var MessageList = React.createClass({
+  render() {
+      return (
+          <div className='messages'>
+              <h2> Conversation: </h2>
+              {
+                  this.props.messages.map((message, i) => {
+                      return (
+                          <Message
+                              key={i}
+                              user={message.user}
+                              text={message.text}
+                              date={message.date}
+                          />
+                      );
+                  })
+              }
+          </div>
+      );
+  }
+});
 
 var MessageForm = React.createClass({
 
@@ -140,80 +137,104 @@ var MessageForm = React.createClass({
   }
 });
 
-//
-//
-// var Chat = React.createClass({
-//
-//   getInitialState() {
-//       return { messages:[], text: '', email:''};
-//   },
-//
-//   componentDidMount() {
-//       this.loadHistoryFromServer();
-//   },
-//
-//
-//   _messageRecieve(message) {
-//       var {messages} = this.state;
-//       messages.push(message);
-//       this.setState({messages});
-//   },
-//
-//   _userTyping(){
-//
-//   },
-//
-//   handleMessageSubmit(message) {
-//       var {messages} = this.state;
-//       messages.push(message);
-//       this.setState({messages});
-//       socket.emit('send:message', message);
-//   },
-//
-//
-//   loadHistoryFromServer : function(){
-//       $.ajax({
-//         type : "post",
-//         url: this.props.url,
-//         dataType: 'json',
-//         data : { email : this.props.email  }
-//         cache: false,
-//         beforeSend : function(xhr) {
-//            xhr.setRequestHeader("Authorization", "Basic " + token());
-//          },
-//         success: function(data) {
-//           this.setState({ messages: data});
-//         }.bind(this),
-//         error: function(xhr, status, err) {
-//           console.error(this.props.url, status, err.toString());
-//         }.bind(this)
-//       });
-//   },
-//
-//   _initialize(data) {
-//       var {users, name} = data;
-//       this.setState({users, user: name});
-//   },
-//
-//   handleMessageSubmit(message) {
-//       var {messages} = this.state;
-//       messages.push(message);
-//       this.setState({messages});
-//       socket.emit('send:message', message);
-//   },
-//
-//   render() {
-//       return (
-//           <div>
-//               <MessageList
-//                   messages={this.state.messages}
-//               />
-//           </div>
-//       );
-//   }
-// });
-//
-//
+
+var Chat = React.createClass({
+
+    getInitialState() {
+        return { messages:[], text: '', email:''};
+    },
+
+    componentDidMount() {
+        this.loadHistoryFromServer();
+    },
+
+    _messageRecieve(data) {
+        var {messages} = this.state;
+        messages.push(message);
+        this.setState({messages});
+    },
+
+    _userTyping(){
+
+    },
+
+    handleMessageSubmit(message) {
+        var {messages} = this.state;
+        messages.push(message);
+        this.setState({messages});
+        socket.emit('send:message', message);
+    },
+
+
+    loadHistoryFromServer : function(){
+        $.ajax({
+            type : "post",
+            url: this.props.url,
+            dataType: 'json',
+            data : { email : this.props.email  }
+            cache: false,
+            beforeSend : function(xhr) {
+                xhr.setRequestHeader("Authorization", "Basic " + token());
+            },
+            success: function(data) {
+                this.setState({ messages: data});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+
+    handleMessageSubmit(message) {
+        var {messages} = this.state;
+        messages.push(message);
+        this.setState({messages});
+        socket.emit('new message', message);
+    },
+
+    render() {
+      return (
+          <div>
+              <MessageList
+                  messages={this.state.messages}
+              />
+          </div>
+      );
+    }
+});
+
+var TabChatList = React.createClass({
+    render(){
+        return(
+            <ul className="TabChatList">
+                {
+                    this.props.users.map((user, i) => {
+                        return (
+                            <TabChat
+                                key={i}
+                                name={user.name}
+                                lastname={user.lastname}
+                                socket_id={user.socket_id}
+                                email={user.email}
+                            ></TabChat>
+                        );
+                    })
+                }
+            </ul>
+        )
+    }
+});
+
+var TabChat = React.createClass({
+    render(){
+        return(
+            <li className="tabChat">
+                {this.props.name} {this.props.lastname}
+            </li>
+        )
+    }
+})
+
 var chatList = React.createClass({
 
     getInitialState: function() {
@@ -230,13 +251,14 @@ var chatList = React.createClass({
     _userJoined(data) {
         var {contacts, messages} = this.state;
         contacts.push({
-            user: data.name
+            name: data.name,
+            lastname : data.lastname
         });
         this.setState({contacts, messages});
     },
 
     _userLeft(){
-
+        var {contacts} = this.state;
     },
 
     loadContactsFromServer: function() {
@@ -325,15 +347,34 @@ var ChatList = React.createClass({
 
     render:function(){
         return (
+
+        );
+    }
+})
+
+
+var ChatApp = React.createClass({
+    getInitialState(){
+
+    },
+    render(){
+        return (
             <div>
+                <TabChatList
+                    users={this.state.contactsSelected}
+                />
                 <ContactsList
                     users={this.state.contacts}
+                />
+                <ChatList
+                    chat={this.state.chats}
+                />
+                <MessageForm
                 />
             </div>
         );
     }
 })
-
 
 
 ReactDOM.render(<ChatList/>, document.getElementById('app'));
